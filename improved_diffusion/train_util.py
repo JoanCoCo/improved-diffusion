@@ -280,7 +280,7 @@ class TrainLoop:
                 else:
                     filename = f"ema_{rate}_{(self.step+self.resume_step):06d}.pt"
                 dest_dir = get_blob_logdir() if self.save_folder == None else self.save_folder
-                with bf.BlobFile(bf.join(save_folder, filename), "wb") as f:
+                with bf.BlobFile(bf.join(dest_dir, filename), "wb") as f:
                     th.save(state_dict, f)
 
         save_checkpoint(0, self.master_params)
