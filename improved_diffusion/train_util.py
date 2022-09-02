@@ -279,21 +279,27 @@ class TrainLoop:
                     filename = f"model{(self.step+self.resume_step):06d}.pt"
                 else:
                     filename = f"ema_{rate}_{(self.step+self.resume_step):06d}.pt"
-                dest_dir = get_blob_logdir() if self.save_folder == None else self.save_folder
-                with bf.BlobFile(bf.join(dest_dir, filename), "wb") as f:
+                with bf.BlobFile(bf.join(get_blob_logdir(), filename), "wb") as f:
                     th.save(state_dict, f)
+                if self.save_folder != None:
+                    with open(os.path.join(self.save_folder, filename)) as f:
+                        th.save(state_dict, f)
+                        f.close()
 
         save_checkpoint(0, self.master_params)
         for rate, params in zip(self.ema_rate, self.ema_params):
             save_checkpoint(rate, params)
 
         if dist.get_rank() == 0:
-            dest_dir = get_blob_logdir() if self.save_folder == None else self.save_folder
             with bf.BlobFile(
-                bf.join(dest_dir, f"opt{(self.step+self.resume_step):06d}.pt"),
+                bf.join(get_blob_logdir(), f"opt{(self.step+self.resume_step):06d}.pt"),
                 "wb",
             ) as f:
                 th.save(self.opt.state_dict(), f)
+            if self.save_folder != None:
+                    with open(os.path.join(self.save_folder, f"opt{(self.step+self.resume_step):06d}.pt")) as f:
+                        th.save(self.opt.state_dict(), f)
+                        f.close()
 
         dist.barrier()
 
