@@ -77,7 +77,8 @@ def main():
         label_arr = label_arr[: args.num_samples]
     if dist.get_rank() == 0:
         shape_str = "x".join([str(x) for x in arr.shape])
-        out_path = os.path.join(logger.get_dir(), f"samples_{shape_str}.npz")
+        dest_dir = logger.get_dir() if args.samples_path == None else args.samples_path
+        out_path = os.path.join(dest_dir, f"samples_{shape_str}.npz")
         logger.log(f"saving to {out_path}")
         if args.class_cond:
             np.savez(out_path, arr, label_arr)
@@ -95,6 +96,7 @@ def create_argparser():
         batch_size=16,
         use_ddim=False,
         model_path="",
+        samples_path=None,
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
