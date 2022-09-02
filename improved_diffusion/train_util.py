@@ -45,6 +45,7 @@ class TrainLoop:
         schedule_sampler=None,
         weight_decay=0.0,
         lr_anneal_steps=0,
+        save_folder=None
     ):
         self.model = model
         self.diffusion = diffusion
@@ -65,6 +66,7 @@ class TrainLoop:
         self.schedule_sampler = schedule_sampler or UniformSampler(diffusion)
         self.weight_decay = weight_decay
         self.lr_anneal_steps = lr_anneal_steps
+        self.save_folder = save_folder
 
         self.step = 0
         self.resume_step = 0
@@ -277,7 +279,8 @@ class TrainLoop:
                     filename = f"model{(self.step+self.resume_step):06d}.pt"
                 else:
                     filename = f"ema_{rate}_{(self.step+self.resume_step):06d}.pt"
-                with bf.BlobFile(bf.join(get_blob_logdir(), filename), "wb") as f:
+                dest_dir = get_blob_logdir() if self.save_folder == None else self.save_folder
+                with bf.BlobFile(bf.join(save_folder, filename), "wb") as f:
                     th.save(state_dict, f)
 
         save_checkpoint(0, self.master_params)
@@ -285,8 +288,9 @@ class TrainLoop:
             save_checkpoint(rate, params)
 
         if dist.get_rank() == 0:
+            dest_dir = get_blob_logdir() if self.save_folder == None else self.save_folder
             with bf.BlobFile(
-                bf.join(get_blob_logdir(), f"opt{(self.step+self.resume_step):06d}.pt"),
+                bf.join(dest_dir, f"opt{(self.step+self.resume_step):06d}.pt"),
                 "wb",
             ) as f:
                 th.save(self.opt.state_dict(), f)
