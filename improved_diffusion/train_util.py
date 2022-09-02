@@ -282,7 +282,7 @@ class TrainLoop:
                 with bf.BlobFile(bf.join(get_blob_logdir(), filename), "wb") as f:
                     th.save(state_dict, f)
                 if self.save_folder != None:
-                    with open(os.path.join(self.save_folder, filename)) as f:
+                    with open(os.path.join(self.save_folder, filename), "wb") as f:
                         th.save(state_dict, f)
                         f.close()
 
@@ -297,7 +297,7 @@ class TrainLoop:
             ) as f:
                 th.save(self.opt.state_dict(), f)
             if self.save_folder != None:
-                    with open(os.path.join(self.save_folder, f"opt{(self.step+self.resume_step):06d}.pt")) as f:
+                    with open(os.path.join(self.save_folder, f"opt{(self.step+self.resume_step):06d}.pt"), "wb") as f:
                         th.save(self.opt.state_dict(), f)
                         f.close()
 
